@@ -3,6 +3,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import Update
 import logging
+import time
 import datetime
 import pytz
 import json
@@ -50,15 +51,21 @@ def save_data(update, context):
         kilometers = ''
 
     event = ' '.join(data)
-    time = date_msg.strftime("%Y-%m-%d-%H:%M")
-
+    msg_time = date_msg.strftime("%Y-%m-%d-%H:%M")
+    
+    answer = False
     if cost.isnumeric() and event:
-        row = [time, kilometers, event, cost]
+        row = [msg_time, kilometers, event, cost]
         print(row)
         sheet.append_row(row)
-        update.message.reply_text('Данные успешно сохранены в Google таблице.')
+        answer = update.message.reply_text('Данные успешно сохранены в Google таблице.')
+        
     else:
-        update.message.reply_text('Неверный формат данных. Попробуйте еще раз.')
+        answer = update.message.reply_text('Неверный формат данных. Попробуйте еще раз.')
+    
+    if answer:
+        time.sleep(60)
+        updater.bot.delete_message(answer.chat.id,answer.message_id)
 
 # Настройка логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
